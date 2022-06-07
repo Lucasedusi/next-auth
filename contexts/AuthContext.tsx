@@ -2,6 +2,11 @@ import { createContext, ReactNode, useEffect, useState } from "react";
 import { setCookie, parseCookies } from "nookies";
 import { api } from "../services/api";
 import Router from "next/router";
+import {
+	AxiosRequestConfig,
+	AxiosRequestHeaders,
+	HeadersDefaults,
+} from "axios";
 
 type User = {
 	email: string;
@@ -23,6 +28,11 @@ type AuthContextData = {
 type AuthProviderProps = {
 	children: ReactNode;
 };
+
+interface SmartAxiosDefaults<D = any>
+	extends Omit<AxiosRequestConfig<D>, "headers"> {
+	headers: HeadersDefaults & AxiosRequestHeaders;
+}
 
 export const AuthContext = createContext({} as AuthContextData);
 
@@ -66,7 +76,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
 				roles,
 			});
 
-			api.defaults.headers["authorization"] = `Bearer ${token}`;
+			const apiDefaults = api.defaults as SmartAxiosDefaults;
+			apiDefaults.headers["Authorization"] = `Bearer ${token}`;
 
 			Router.push("/dashboard");
 		} catch (error) {
